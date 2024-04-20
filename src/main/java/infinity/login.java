@@ -1,91 +1,67 @@
 package infinity;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.sql.*;
 
+@SpringBootApplication
 @RestController
 public class login {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final String DB_URL = "jdbc:mysql://127.0.0.1/isd";
+    private final String DB_USER = "Kieuhieu2003";
+    private final String DB_PASSWORD = "Kieuhieu@2003";
+
+    public static void main(String[] args) {
+        SpringApplication.run(login.class, args);
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLogin userLogin) {
-        String username = userLogin.getUsername();
-        String password = userLogin.getPassword();
-
-        String query = "SELECT * FROM user_infor WHERE user_name = ? AND password = ?";
+    public String login(@RequestParam("username") String username, @RequestParam("password") String password) {
+        Connection conn = null;
         try {
-            User user = jdbcTemplate.queryForObject(query, new Object[]{username, password}, (rs, rowNum) ->
-                    new User(rs.getInt("user_id"), rs.getString("user_name")));
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
+            if (conn != null) {
+                PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user_infor WHERE user_name = ? AND password = ?");
+                stmt.setString(1, username);
+                stmt.setString(2, password);
+                ResultSet resultSet = stmt.executeQuery();
 
-            // Nếu người dùng được tìm thấy, trả về dữ liệu người dùng
-            return ResponseEntity.ok(user);
-        } catch (Exception e) {
-            // Nếu không tìm thấy người dùng hoặc có lỗi xảy ra, trả về mã lỗi UNAUTHORIZED
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Tên người dùng hoặc mật khẩu không đúng");
+                if (resultSet.next()) {
+                    int userId = resultSet.getInt("user_id");
+
+                    PreparedStatement authorityStmt = conn.prepareStatement("SELECT * FROM authority WHERE user_id = ?");
+                    authorityStmt.setInt(1, userId);
+                    ResultSet authorityResult = authorityStmt.executeQuery();
+
+                    if (authorityResult.next()) {
+                        // Nếu có, trả về 'admin'
+                        return "admin";
+                    } else {
+                        // Ngược lại, trả về 'employee'
+                        return "employee";
+                    }
+                } else {
+                    // Trả về 'error' nếu tên người dùng hoặc mật khẩu không đúng
+                    return "error";
+                }
+            } else {
+                // Trả về 'error' nếu không kết nối được cơ sở dữ liệu
+                return "error";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Trả về 'error' nếu có lỗi xảy ra trong quá trình xử lý cơ sở dữ liệu
+            return "error";
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
-
-// Đảm bảo class UserLogin và User được đặt trong các file riêng biệt
-class UserLogin {
-    private String username;
-    private String password;
-
-    // Constructor
-    public UserLogin(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
-    // Getters and setters
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-}
-
-
-class User {
-    private int userId;
-    private String userName;
-
-    // Constructor
-    public User(int userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
-    }
-
-    // Getters and setters
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-}
-
