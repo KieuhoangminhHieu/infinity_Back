@@ -5,8 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Random;
 
@@ -14,12 +13,15 @@ import java.util.Random;
 @RestController
 public class LoginController {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final DataSource dataSource;
 
     private final String DB_URL = "jdbc:mysql://127.0.0.1/isd";
     private final String DB_USER = "Kieuhieu2003";
     private final String DB_PASSWORD = "Kieuhieu@2003";
+
+    public LoginController(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(LoginController.class, args);
@@ -27,7 +29,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public String login(@RequestParam("username") String username, @RequestParam("password") String password) {
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try (Connection conn = dataSource.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user_infor WHERE user_name = ? AND password = ?")) {
                     stmt.setString(1, username);
@@ -81,11 +83,16 @@ public class LoginController {
         }
 
         // Thực hiện thêm người dùng mới vào cơ sở dữ liệu
-        try {
-            jdbcTemplate.update("INSERT INTO wait (full_name, user_name, password, email) VALUES (?, ?, ?, ?)",
-                    request.getFullName(), username, password, email);
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO wait (full_name, user_name, password, email) VALUES (?, ?, ?, ?)")) {
+                insertStmt.setString(1, request.getFullName());
+                insertStmt.setString(2, username);
+                insertStmt.setString(3, password);
+                insertStmt.setString(4, email);
+                insertStmt.executeUpdate();
+            }
             return ResponseEntity.status(HttpStatus.CREATED).body("Đăng ký thành công. Vui lòng đợi admin phê duyệt tài khoản của bạn.");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi đăng ký!");
         }
