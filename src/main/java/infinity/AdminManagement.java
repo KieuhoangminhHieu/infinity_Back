@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootApplication
 @RestController
@@ -79,6 +81,7 @@ public class AdminManagement {
     }
 
     class Call {
+        private int callId;
         private String phoneNumber;
         private Date callDate;
         private String description;
@@ -88,6 +91,13 @@ public class AdminManagement {
         private int staId;
 
         // Các getter và setter
+        public int getCallId() {
+            return callId;
+        }
+
+        public void setCallId(int callId) {
+            this.callId = callId;
+        }
         public String getPhoneNumber() {
             return phoneNumber;
         }
@@ -246,4 +256,54 @@ public class AdminManagement {
             this.cusName = cusName;
         }
     }
+    @GetMapping("/searchCustomer")
+    public List<CustomerData> searchCustomerData(@RequestParam String cusName) {
+        List<CustomerData> result = new ArrayList<>();
+        try (Connection connection = getConnection()) {
+            String sql = "SELECT * FROM customer_data WHERE cus_name LIKE ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, "%" + cusName + "%");
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                CustomerData customerData = new CustomerData();
+                customerData.setCusId(resultSet.getInt("cus_id"));
+                customerData.setCallId(resultSet.getInt("call_id"));
+                customerData.setStaId(resultSet.getInt("sta_id"));
+                customerData.setCusName(resultSet.getString("cus_name"));
+                result.add(customerData);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    @GetMapping("/searchCall")
+    public List<Call> searchCallsByPhoneNumber(@RequestParam String phoneNumber) {
+        List<Call> result = new ArrayList<>();
+        try (Connection connection = getConnection()) {
+            String sql = "SELECT * FROM calls WHERE phone_number = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, phoneNumber);
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Call call = new Call();
+                call.setCallId(resultSet.getInt("call_id"));
+                call.setPhoneNumber(resultSet.getString("phone_number"));
+                call.setCallDate(resultSet.getDate("call_date"));
+                call.setDescription(resultSet.getString("description"));
+                call.setDuration(resultSet.getInt("duration"));
+                call.setUserId(resultSet.getInt("user_id"));
+                call.setAuId(resultSet.getInt("au_id"));
+                call.setStaId(resultSet.getInt("sta_id"));
+                result.add(call);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
 }
