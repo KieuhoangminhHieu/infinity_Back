@@ -1,11 +1,20 @@
 package infinity;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import javax.sql.DataSource;
-import java.sql.*;
+
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -304,6 +313,72 @@ public class AdminManagement {
         }
         return result;
     }
+    @GetMapping("/filter-calls")
+    public List<Call> filterCalls(@RequestParam(required = false) Integer userId,
+                                  @RequestParam(required = false) Integer statusId) {
+        List<Call> result = new ArrayList<>();
+        try (Connection connection = getConnection()) {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM calls WHERE 1=1");
 
+            if (userId != null) {
+                sqlBuilder.append(" AND user_id = ").append(userId);
+            }
 
+            if (statusId != null) {
+                sqlBuilder.append(" AND sta_id = ").append(statusId);
+            }
+
+            String sql = sqlBuilder.toString();
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Call call = new Call();
+                call.setCallId(resultSet.getInt("call_id"));
+                call.setPhoneNumber(resultSet.getString("phone_number"));
+                call.setCallDate(resultSet.getDate("call_date"));
+                call.setDescription(resultSet.getString("description"));
+                call.setDuration(resultSet.getInt("duration"));
+                call.setUserId(resultSet.getInt("user_id"));
+                call.setAuId(resultSet.getInt("au_id"));
+                call.setStaId(resultSet.getInt("sta_id"));
+                result.add(call);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    @GetMapping("/filter-customer-data")
+    public List<CustomerData> filterCustomerData(@RequestParam(required = false) Integer userId,
+                                                 @RequestParam(required = false) Integer statusId) {
+        List<CustomerData> result = new ArrayList<>();
+        try (Connection connection = getConnection()) {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM customer_data WHERE 1=1");
+
+            if (userId != null) {
+                sqlBuilder.append(" AND user_id = ").append(userId);
+            }
+
+            if (statusId != null) {
+                sqlBuilder.append(" AND sta_id = ").append(statusId);
+            }
+
+            String sql = sqlBuilder.toString();
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                CustomerData customerData = new CustomerData();
+                customerData.setCusId(resultSet.getInt("cus_id"));
+                customerData.setCallId(resultSet.getInt("call_id"));
+                customerData.setStaId(resultSet.getInt("sta_id"));
+                customerData.setCusName(resultSet.getString("cus_name"));
+                result.add(customerData);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }
