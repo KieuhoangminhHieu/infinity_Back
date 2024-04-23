@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.sql.DataSource;
 import java.sql.*;
 
+@CrossOrigin
 @RestController
 public class RegisterController {
 

@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Random;
 
+@CrossOrigin
 @RestController
 public class ForgotPasswordController {
 
