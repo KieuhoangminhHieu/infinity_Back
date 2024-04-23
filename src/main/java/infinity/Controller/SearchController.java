@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.Date;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,9 +27,9 @@ public class SearchController {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 CustomerData customerData = new CustomerData();
-                customerData.setCusId(resultSet.getInt("cus_id"));
-                customerData.setCallId(resultSet.getInt("call_id"));
-                customerData.setStaId(resultSet.getInt("sta_id"));
+                customerData.setCusId(resultSet.getString("cus_id"));
+                customerData.setCallId(resultSet.getString("call_id"));
+                customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
                 result.add(customerData);
             }
@@ -53,12 +51,10 @@ public class SearchController {
                 Call call = new Call();
                 call.setCallId(resultSet.getInt("call_id"));
                 call.setPhoneNumber(resultSet.getString("phone_number"));
-                // Sử dụng getDate() để lấy giá trị ngày từ cột call_date
-                java.sql.Timestamp callTimestamp = resultSet.getTimestamp("call_date");
-
-                call.setCallDate(callTimestamp);
+                // Gán giá trị chuỗi từ cột call_date trực tiếp vào thuộc tính callDate
+                call.setCallDate(resultSet.getString("call_date"));
                 call.setDescription(resultSet.getString("description"));
-                call.setDuration(resultSet.getInt("duration"));
+                call.setDuration(resultSet.getString("duration")); // Sửa thành String
                 call.setUserId(resultSet.getInt("user_id"));
                 call.setAuId(resultSet.getInt("au_id"));
                 call.setStaId(resultSet.getInt("sta_id"));

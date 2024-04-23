@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class CustomerDataController {
@@ -16,14 +18,39 @@ public class CustomerDataController {
     @Autowired
     private DatabaseManager databaseManager;
 
+    @GetMapping("/customer-data")
+    public List<CustomerData> getAllCustomerData() {
+        List<CustomerData> customerDataList = new ArrayList<>();
+        try (Connection connection = databaseManager.getConnection()) {
+            String sql = "SELECT * FROM customer_data";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            int stt = 1;
+            while (resultSet.next()) {
+                CustomerData customerData = new CustomerData();
+                // Set STT
+                customerData.setStt(stt++);
+                customerData.setCusId(resultSet.getString("cus_id"));
+                customerData.setCallId(resultSet.getString("call_id"));
+                customerData.setStaId(resultSet.getString("sta_id"));
+                customerData.setCusName(resultSet.getString("cus_name"));
+                customerDataList.add(customerData);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return customerDataList;
+    }
+
+
     @PostMapping("/customer-data")
     public void saveCustomerDataToDatabase(@RequestBody CustomerData customerData) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "INSERT INTO customer_data (cus_id, call_id, sta_id, cus_name) VALUES (?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, customerData.getCusId());
-            statement.setInt(2, customerData.getCallId());
-            statement.setInt(3, customerData.getStaId());
+            statement.setString(1, customerData.getCusId());
+            statement.setString(2, customerData.getCallId());
+            statement.setString(3, customerData.getStaId());
             statement.setString(4, customerData.getCusName());
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -32,18 +59,18 @@ public class CustomerDataController {
     }
 
     @GetMapping("/customer-data/{cusId}")
-    public CustomerData getCustomerDataById(@PathVariable int cusId) {
+    public CustomerData getCustomerDataById(@PathVariable String cusId) {
         CustomerData customerData = null;
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "SELECT * FROM customer_data WHERE cus_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, cusId);
+            statement.setString(1, cusId);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 customerData = new CustomerData();
-                customerData.setCusId(resultSet.getInt("cus_id"));
-                customerData.setCallId(resultSet.getInt("call_id"));
-                customerData.setStaId(resultSet.getInt("sta_id"));
+                customerData.setCusId(resultSet.getString("cus_id"));
+                customerData.setCallId(resultSet.getString("call_id"));
+                customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
             }
         } catch (SQLException e) {
@@ -53,14 +80,14 @@ public class CustomerDataController {
     }
 
     @PutMapping("/customer-data/{cusId}")
-    public void updateCustomerDataInDatabase(@PathVariable int cusId, @RequestBody CustomerData customerData) {
+    public void updateCustomerDataInDatabase(@PathVariable String cusId, @RequestBody CustomerData customerData) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "UPDATE customer_data SET call_id = ?, sta_id = ?, cus_name = ? WHERE cus_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, customerData.getCallId());
-            statement.setInt(2, customerData.getStaId());
+            statement.setString(1, customerData.getCallId());
+            statement.setString(2, customerData.getStaId());
             statement.setString(3, customerData.getCusName());
-            statement.setInt(4, cusId);
+            statement.setString(4, cusId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -68,11 +95,11 @@ public class CustomerDataController {
     }
 
     @DeleteMapping("/customer-data/{cusId}")
-    public void deleteCustomerDataFromDatabase(@PathVariable int cusId) {
+    public void deleteCustomerDataFromDatabase(@PathVariable String cusId) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "DELETE FROM customer_data WHERE cus_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, cusId);
+            statement.setString(1, cusId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

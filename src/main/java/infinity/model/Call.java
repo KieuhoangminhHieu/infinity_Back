@@ -1,17 +1,22 @@
 package infinity.model;
-
-import java.util.Date;
-
 public class Call {
 
     private int callId;
     private String phoneNumber;
-    private Date callDate;
+    private String callDate;
     private String description;
-    private int duration;
+    private String duration; // Chuyển kiểu dữ liệu của duration thành String
     private int userId;
     private int auId;
     private int staId;
+    private int stt;
+    public int getStt() {
+        return stt;
+    }
+
+    public void setStt(int stt) {
+        this.stt = stt;
+    }
 
     // Các getter và setter
     public int getCallId() {
@@ -30,11 +35,11 @@ public class Call {
         this.phoneNumber = phoneNumber;
     }
 
-    public Date getCallDate() {
+    public String getCallDate() {
         return callDate;
     }
 
-    public void setCallDate(Date callDate) {
+    public void setCallDate(String callDate) {
         this.callDate = callDate;
     }
 
@@ -46,11 +51,11 @@ public class Call {
         this.description = description;
     }
 
-    public int getDuration() {
+    public String getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(String duration) {
         this.duration = duration;
     }
 

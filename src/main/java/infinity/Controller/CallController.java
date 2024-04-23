@@ -4,7 +4,8 @@ import infinity.database.DatabaseManager;
 import infinity.model.Call;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.List;
+import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +16,37 @@ public class CallController {
 
     @Autowired
     private DatabaseManager databaseManager;
+
+    @GetMapping("/calls")
+    public List<Call> getAllCalls() {
+        List<Call> calls = new ArrayList<>();
+        int stt = 1; // Khởi tạo số thứ tự
+
+        try (Connection connection = databaseManager.getConnection()) {
+            String sql = "SELECT * FROM calls";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Call call = new Call();
+                call.setCallId(resultSet.getInt("call_id"));
+                call.setPhoneNumber(resultSet.getString("phone_number"));
+                call.setCallDate(resultSet.getString("call_date"));
+                call.setDescription(resultSet.getString("description"));
+                call.setDuration(resultSet.getString("duration"));
+                call.setUserId(resultSet.getInt("user_id"));
+                call.setAuId(resultSet.getInt("au_id"));
+                call.setStaId(resultSet.getInt("sta_id"));
+
+                // Thêm cột STT
+                call.setStt(stt++); // Gán số thứ tự và tăng giá trị biến đếm
+                calls.add(call);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return calls;
+    }
+
 
     @PostMapping("/calls")
     public void saveCallToDatabase(@RequestBody Call call) {
@@ -34,9 +66,9 @@ public class CallController {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, nextId); // Sử dụng giá trị `call_id` mới
             statement.setString(2, call.getPhoneNumber());
-            statement.setTimestamp(3, new java.sql.Timestamp(call.getCallDate().getTime()));
+            statement.setString(3, call.getCallDate());
             statement.setString(4, call.getDescription());
-            statement.setInt(5, call.getDuration());
+            statement.setString(5, call.getDuration()); // Cập nhật thành kiểu String
             statement.setInt(6, call.getUserId());
             statement.setInt(7, call.getAuId());
             statement.setInt(8, call.getStaId());
@@ -65,9 +97,9 @@ public class CallController {
                     "user_id = ?, au_id = ?, sta_id = ? WHERE call_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, call.getPhoneNumber());
-            statement.setTimestamp(2, new java.sql.Timestamp(call.getCallDate().getTime()));
+            statement.setString(2, call.getCallDate());
             statement.setString(3, call.getDescription());
-            statement.setInt(4, call.getDuration());
+            statement.setString(4, call.getDuration()); // Cập nhật thành kiểu String
             statement.setInt(5, call.getUserId());
             statement.setInt(6, call.getAuId());
             statement.setInt(7, call.getStaId());
@@ -90,9 +122,9 @@ public class CallController {
                 call = new Call();
                 call.setCallId(resultSet.getInt("call_id"));
                 call.setPhoneNumber(resultSet.getString("phone_number"));
-                call.setCallDate(resultSet.getTimestamp("call_date"));
+                call.setCallDate(resultSet.getString("call_date"));
                 call.setDescription(resultSet.getString("description"));
-                call.setDuration(resultSet.getInt("duration"));
+                call.setDuration(resultSet.getString("duration")); // Cập nhật thành kiểu String
                 call.setUserId(resultSet.getInt("user_id"));
                 call.setAuId(resultSet.getInt("au_id"));
                 call.setStaId(resultSet.getInt("sta_id"));

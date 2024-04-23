@@ -1,5 +1,4 @@
 package infinity.Controller;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,32 +29,28 @@ public class LoginController {
                     try (ResultSet resultSet = stmt.executeQuery()) {
                         if (resultSet.next()) {
                             int userId = resultSet.getInt("user_id");
-                            try (PreparedStatement authorityStmt = conn.prepareStatement("SELECT * FROM authority WHERE user_id = ?")) {
-                                authorityStmt.setInt(1, userId);
-                                try (ResultSet authorityResult = authorityStmt.executeQuery()) {
-                                    if (authorityResult.next()) {
-                                        // Nếu có, trả về 'admin' và user_id
-                                        return new LoginResponse("admin", userId);
-                                    } else {
-                                        // Ngược lại, trả về 'employee' và user_id
-                                        return new LoginResponse("employee", userId);
-                                    }
-                                }
+                            String fullName = resultSet.getString("full_name");
+                            String authority = resultSet.getString("authority");
+                            // Kiểm tra quyền của người dùng
+                            if (authority != null && authority.equals("admin")) {
+                                return new LoginResponse("admin", userId, fullName);
+                            } else {
+                                return new LoginResponse("employee", userId, fullName);
                             }
                         } else {
                             // Trả về 'error' nếu tên người dùng hoặc mật khẩu không đúng
-                            return new LoginResponse("error", -1);
+                            return new LoginResponse("error", -1, null);
                         }
                     }
                 }
             } else {
                 // Trả về 'error' nếu không kết nối được cơ sở dữ liệu
-                return new LoginResponse("error", -1);
+                return new LoginResponse("error", -1, null);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             // Trả về 'error' nếu có lỗi xảy ra trong quá trình xử lý cơ sở dữ liệu
-            return new LoginResponse("error", -1);
+            return new LoginResponse("error", -1, null);
         }
     }
 
@@ -85,10 +80,12 @@ public class LoginController {
     public static class LoginResponse {
         private String role;
         private int userId;
+        private String userName;
 
-        public LoginResponse(String role, int userId) {
+        public LoginResponse(String role, int userId, String userName) {
             this.role = role;
             this.userId = userId;
+            this.userName = userName;
         }
 
         // Getter cho role
@@ -99,6 +96,11 @@ public class LoginController {
         // Getter cho user_id
         public int getUserId() {
             return userId;
+        }
+
+        // Getter cho user_name
+        public String getUserName() {
+            return userName;
         }
     }
 }
