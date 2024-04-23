@@ -17,7 +17,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) {
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
 
@@ -34,30 +34,31 @@ public class LoginController {
                                 authorityStmt.setInt(1, userId);
                                 try (ResultSet authorityResult = authorityStmt.executeQuery()) {
                                     if (authorityResult.next()) {
-                                        // Nếu có, trả về 'admin'
-                                        return "admin";
+                                        // Nếu có, trả về 'admin' và user_id
+                                        return new LoginResponse("admin", userId);
                                     } else {
-                                        // Ngược lại, trả về 'employee'
-                                        return "employee";
+                                        // Ngược lại, trả về 'employee' và user_id
+                                        return new LoginResponse("employee", userId);
                                     }
                                 }
                             }
                         } else {
                             // Trả về 'error' nếu tên người dùng hoặc mật khẩu không đúng
-                            return "error";
+                            return new LoginResponse("error", -1);
                         }
                     }
                 }
             } else {
                 // Trả về 'error' nếu không kết nối được cơ sở dữ liệu
-                return "error";
+                return new LoginResponse("error", -1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             // Trả về 'error' nếu có lỗi xảy ra trong quá trình xử lý cơ sở dữ liệu
-            return "error";
+            return new LoginResponse("error", -1);
         }
     }
+
     public static class LoginRequest {
         private String username;
         private String password;
@@ -81,9 +82,23 @@ public class LoginController {
         }
     }
 
+    public static class LoginResponse {
+        private String role;
+        private int userId;
 
+        public LoginResponse(String role, int userId) {
+            this.role = role;
+            this.userId = userId;
+        }
+
+        // Getter cho role
+        public String getRole() {
+            return role;
+        }
+
+        // Getter cho user_id
+        public int getUserId() {
+            return userId;
+        }
+    }
 }
-
-
-
-
