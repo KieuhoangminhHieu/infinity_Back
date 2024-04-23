@@ -34,6 +34,8 @@ public class CustomerDataController {
                 customerData.setCallId(resultSet.getString("call_id"));
                 customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
+                customerData.setDatatype(resultSet.getString("datatype")); //
+                customerData.setPhoneNumber(resultSet.getString("phone_number"));
                 customerDataList.add(customerData);
             }
         } catch (SQLException e) {
@@ -43,15 +45,20 @@ public class CustomerDataController {
     }
 
 
+
+
+
     @PostMapping("/customer-data")
     public void saveCustomerDataToDatabase(@RequestBody CustomerData customerData) {
         try (Connection connection = databaseManager.getConnection()) {
-            String sql = "INSERT INTO customer_data (cus_id, call_id, sta_id, cus_name) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO customer_data (cus_id, call_id, sta_id, cus_name, datatype, phone_number) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, customerData.getCusId());
             statement.setString(2, customerData.getCallId());
             statement.setString(3, customerData.getStaId());
             statement.setString(4, customerData.getCusName());
+            statement.setString(5, customerData.getDatatype()); // Thêm cột mới
+            statement.setString(6, customerData.getPhoneNumber()); // Thêm cột mới
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -72,6 +79,8 @@ public class CustomerDataController {
                 customerData.setCallId(resultSet.getString("call_id"));
                 customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
+                customerData.setDatatype(resultSet.getString("datatype")); // Thêm cột mới
+                customerData.setPhoneNumber(resultSet.getString("phone_number")); // Thêm cột mới
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,12 +91,14 @@ public class CustomerDataController {
     @PutMapping("/customer-data/{cusId}")
     public void updateCustomerDataInDatabase(@PathVariable String cusId, @RequestBody CustomerData customerData) {
         try (Connection connection = databaseManager.getConnection()) {
-            String sql = "UPDATE customer_data SET call_id = ?, sta_id = ?, cus_name = ? WHERE cus_id = ?";
+            String sql = "UPDATE customer_data SET call_id = ?, sta_id = ?, cus_name = ?, datatype = ?, phone_number = ? WHERE cus_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, customerData.getCallId());
             statement.setString(2, customerData.getStaId());
             statement.setString(3, customerData.getCusName());
-            statement.setString(4, cusId);
+            statement.setString(4, customerData.getDatatype()); // Thêm cột mới
+            statement.setString(5, customerData.getPhoneNumber()); // Thêm cột mới
+            statement.setString(6, cusId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -105,4 +116,5 @@ public class CustomerDataController {
             e.printStackTrace();
         }
     }
+
 }

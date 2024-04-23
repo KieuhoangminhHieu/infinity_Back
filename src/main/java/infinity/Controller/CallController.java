@@ -33,9 +33,13 @@ public class CallController {
                 call.setCallDate(resultSet.getString("call_date"));
                 call.setDescription(resultSet.getString("description"));
                 call.setDuration(resultSet.getString("duration"));
+                call.setStart(resultSet.getString("start")); // Thêm cột start
+                call.setEnd(resultSet.getString("end")); // Thêm cột end
+                call.setRecord(resultSet.getString("record")); // Thêm cột record
                 call.setUserId(resultSet.getInt("user_id"));
                 call.setAuId(resultSet.getInt("au_id"));
                 call.setStaId(resultSet.getInt("sta_id"));
+
 
                 // Thêm cột STT
                 call.setStt(stt++); // Gán số thứ tự và tăng giá trị biến đếm
@@ -61,17 +65,20 @@ public class CallController {
             }
 
             // Chèn bản ghi mới với `call_id` được xác định
-            String sql = "INSERT INTO calls (call_id, phone_number, call_date, description, duration, user_id, au_id, sta_id) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO calls (call_id, phone_number, call_date, description, duration, start, end, record, user_id, au_id, sta_id) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, nextId); // Sử dụng giá trị `call_id` mới
             statement.setString(2, call.getPhoneNumber());
             statement.setString(3, call.getCallDate());
             statement.setString(4, call.getDescription());
             statement.setString(5, call.getDuration()); // Cập nhật thành kiểu String
-            statement.setInt(6, call.getUserId());
-            statement.setInt(7, call.getAuId());
-            statement.setInt(8, call.getStaId());
+            statement.setString(6, call.getStart()); // Thêm cột start
+            statement.setString(7, call.getEnd()); // Thêm cột end
+            statement.setString(8, call.getRecord()); // Thêm cột record
+            statement.setInt(9, call.getUserId());
+            statement.setInt(10, call.getAuId());
+            statement.setInt(11, call.getStaId());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,44 +101,22 @@ public class CallController {
     public void updateCallInDatabase(@PathVariable long id, @RequestBody Call call) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "UPDATE calls SET phone_number = ?, call_date = ?, description = ?, duration = ?, " +
-                    "user_id = ?, au_id = ?, sta_id = ? WHERE call_id = ?";
+                    "start = ?, end = ?, record = ?, user_id = ?, au_id = ?, sta_id = ? WHERE call_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, call.getPhoneNumber());
             statement.setString(2, call.getCallDate());
             statement.setString(3, call.getDescription());
             statement.setString(4, call.getDuration()); // Cập nhật thành kiểu String
-            statement.setInt(5, call.getUserId());
-            statement.setInt(6, call.getAuId());
-            statement.setInt(7, call.getStaId());
-            statement.setLong(8, id);
+            statement.setString(5, call.getStart()); // Thêm cột start
+            statement.setString(6, call.getEnd()); // Thêm cột end
+            statement.setString(7, call.getRecord()); // Thêm cột record
+            statement.setInt(8, call.getUserId());
+            statement.setInt(9, call.getAuId());
+            statement.setInt(10, call.getStaId());
+            statement.setLong(11, id);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    @GetMapping("/calls/{id}")
-    public Call getCallById(@PathVariable long id) {
-        Call call = null;
-        try (Connection connection = databaseManager.getConnection()) {
-            String sql = "SELECT * FROM calls WHERE call_id = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setLong(1, id);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                call = new Call();
-                call.setCallId(resultSet.getInt("call_id"));
-                call.setPhoneNumber(resultSet.getString("phone_number"));
-                call.setCallDate(resultSet.getString("call_date"));
-                call.setDescription(resultSet.getString("description"));
-                call.setDuration(resultSet.getString("duration")); // Cập nhật thành kiểu String
-                call.setUserId(resultSet.getInt("user_id"));
-                call.setAuId(resultSet.getInt("au_id"));
-                call.setStaId(resultSet.getInt("sta_id"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return call;
     }
 }

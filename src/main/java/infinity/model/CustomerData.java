@@ -5,6 +5,24 @@ public class CustomerData {
     private String callId;
     private String staId;
     private String cusName;
+    private String datatype; // Thêm cột mới
+    private String phoneNumber; // Thêm cột mới
+    public String getDatatype() {
+        return datatype;
+    }
+
+    public void setDatatype(String datatype) {
+        this.datatype = datatype;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
 
     // Getter and setter for stt
     public int getStt() {

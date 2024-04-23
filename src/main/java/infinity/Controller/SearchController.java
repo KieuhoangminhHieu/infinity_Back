@@ -18,12 +18,26 @@ import java.util.List;
 public class SearchController {
 
     @GetMapping("/searchCustomer")
-    public List<CustomerData> searchCustomerData(@RequestParam String cusName) {
+    public List<CustomerData> searchCustomerData(
+            @RequestParam(required = false) String cusName,
+            @RequestParam(required = false) String phoneNumber) {
         List<CustomerData> result = new ArrayList<>();
         try (Connection connection = DatabaseManager.getConnection()) {
-            String sql = "SELECT * FROM customer_data WHERE cus_name LIKE ?";
+            String sql = "SELECT * FROM customer_data WHERE 1=1";
+            if (cusName != null) {
+                sql += " AND cus_name LIKE ?";
+            }
+            if (phoneNumber != null) {
+                sql += " AND phone_number LIKE ?";
+            }
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, "%" + cusName + "%");
+            int parameterIndex = 1;
+            if (cusName != null) {
+                statement.setString(parameterIndex++, "%" + cusName + "%");
+            }
+            if (phoneNumber != null) {
+                statement.setString(parameterIndex++, "%" + phoneNumber + "%");
+            }
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 CustomerData customerData = new CustomerData();
@@ -31,6 +45,8 @@ public class SearchController {
                 customerData.setCallId(resultSet.getString("call_id"));
                 customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
+                customerData.setDatatype(resultSet.getString("datatype")); // Thêm cột mới
+                customerData.setPhoneNumber(resultSet.getString("phone_number")); // Thêm cột mới
                 result.add(customerData);
             }
         } catch (SQLException e) {
@@ -39,11 +55,12 @@ public class SearchController {
         return result;
     }
 
+
     @GetMapping("/searchCall")
     public List<Call> searchCallsByPhoneNumber(@RequestParam String phoneNumber) {
         List<Call> result = new ArrayList<>();
         try (Connection connection = DatabaseManager.getConnection()) {
-            String sql = "SELECT * FROM calls WHERE phone_number = ?";
+            String sql = "SELECT * FROM calls WHERE p   hone_number = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, phoneNumber);
             ResultSet resultSet = statement.executeQuery();

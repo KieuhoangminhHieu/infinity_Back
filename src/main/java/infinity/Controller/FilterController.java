@@ -57,16 +57,25 @@ public class FilterController {
 
 
     @GetMapping("/filter-customer-data")
-    public List<CustomerData> filterCustomerData(@RequestParam(required = false) Integer statusId) {
+    public List<CustomerData> filterCustomerData(
+            @RequestParam(required = false) Integer statusId,
+            @RequestParam(required = false) String datatype) {
         List<CustomerData> result = new ArrayList<>();
         try (Connection connection = DatabaseManager.getConnection()) {
             String sql = "SELECT * FROM customer_data WHERE 1=1";
             if (statusId != null) {
                 sql += " AND sta_id = ?";
             }
+            if (datatype != null) {
+                sql += " AND datatype = ?";
+            }
             PreparedStatement statement = connection.prepareStatement(sql);
+            int parameterIndex = 1;
             if (statusId != null) {
-                statement.setInt(1, statusId);
+                statement.setInt(parameterIndex++, statusId);
+            }
+            if (datatype != null) {
+                statement.setString(parameterIndex++, datatype);
             }
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -75,6 +84,8 @@ public class FilterController {
                 customerData.setCallId(resultSet.getString("call_id"));
                 customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
+                customerData.setDatatype(resultSet.getString("datatype")); // Thêm cột mới
+                customerData.setPhoneNumber(resultSet.getString("phone_number")); // Thêm cột mới
                 result.add(customerData);
             }
         } catch (SQLException e) {
@@ -82,6 +93,7 @@ public class FilterController {
         }
         return result;
     }
+
 
 }
 

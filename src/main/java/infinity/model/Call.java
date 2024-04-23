@@ -1,4 +1,5 @@
 package infinity.model;
+
 public class Call {
 
     private int callId;
@@ -6,10 +7,14 @@ public class Call {
     private String callDate;
     private String description;
     private String duration; // Chuyển kiểu dữ liệu của duration thành String
+    private String start; // Thêm cột start
+    private String end; // Thêm cột end
+    private String record; // Thêm cột record
     private int userId;
     private int auId;
     private int staId;
     private int stt;
+
     public int getStt() {
         return stt;
     }
@@ -59,6 +64,30 @@ public class Call {
         this.duration = duration;
     }
 
+    public String getStart() {
+        return start;
+    }
+
+    public void setStart(String start) {
+        this.start = start;
+    }
+
+    public String getEnd() {
+        return end;
+    }
+
+    public void setEnd(String end) {
+        this.end = end;
+    }
+
+    public String getRecord() {
+        return record;
+    }
+
+    public void setRecord(String record) {
+        this.record = record;
+    }
+
     public int getUserId() {
         return userId;
     }
@@ -82,5 +111,4 @@ public class Call {
     public void setStaId(int staId) {
         this.staId = staId;
     }
-
 }
