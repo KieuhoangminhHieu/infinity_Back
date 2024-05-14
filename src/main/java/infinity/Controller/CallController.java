@@ -6,6 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.ArrayList;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -127,5 +136,67 @@ public class CallController {
             e.printStackTrace();
         }
         return call;
+    }
+    @GetMapping("/calls/export/excel")
+    public ResponseEntity<byte[]> exportToExcel() {
+        try (Connection connection = databaseManager.getConnection()) {
+            String sql = "SELECT * FROM calls";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+
+            // Tạo workbook mới
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Calls");
+
+            // Tạo header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Call ID");
+            headerRow.createCell(1).setCellValue("Phone Number");
+            headerRow.createCell(2).setCellValue("Call Date");
+            headerRow.createCell(3).setCellValue("Description");
+            headerRow.createCell(4).setCellValue("Duration");
+            headerRow.createCell(5).setCellValue("Start");
+            headerRow.createCell(6).setCellValue("End");
+            headerRow.createCell(7).setCellValue("Record");
+            headerRow.createCell(8).setCellValue("User ID");
+            headerRow.createCell(9).setCellValue("AU ID");
+            headerRow.createCell(10).setCellValue("STA ID");
+
+            // Đổ dữ liệu từ ResultSet vào workbook
+            int rowNum = 1;
+            while (resultSet.next()) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(resultSet.getInt("call_id"));
+                row.createCell(1).setCellValue(resultSet.getString("phone_number"));
+                row.createCell(2).setCellValue(resultSet.getString("call_date"));
+                row.createCell(3).setCellValue(resultSet.getString("description"));
+                row.createCell(4).setCellValue(resultSet.getString("duration"));
+                row.createCell(5).setCellValue(resultSet.getString("start"));
+                row.createCell(6).setCellValue(resultSet.getString("end"));
+                row.createCell(7).setCellValue(resultSet.getString("record"));
+                row.createCell(8).setCellValue(resultSet.getInt("user_id"));
+                row.createCell(9).setCellValue(resultSet.getInt("au_id"));
+                row.createCell(10).setCellValue(resultSet.getInt("sta_id"));
+            }
+
+            // Ghi workbook vào ByteArrayOutputStream
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            workbook.close();
+
+            // Thiết lập HttpHeaders
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=calls.xlsx");
+
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(baos.toByteArray());
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
