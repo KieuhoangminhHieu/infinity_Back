@@ -64,5 +64,6 @@ public class CustomerData {
 
     public void setCusName(String cusName) {
         this.cusName = cusName;
+
     }
 }

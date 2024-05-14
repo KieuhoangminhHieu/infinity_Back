@@ -47,8 +47,8 @@ public class SearchController {
                 customerData.setCallId(resultSet.getString("call_id"));
                 customerData.setStaId(resultSet.getString("sta_id"));
                 customerData.setCusName(resultSet.getString("cus_name"));
-                customerData.setDatatype(resultSet.getString("datatype")); // Thêm cột mới
-                customerData.setPhoneNumber(resultSet.getString("phone_number")); // Thêm cột mới
+                customerData.setDatatype(resultSet.getString("datatype"));
+                customerData.setPhoneNumber(resultSet.getString("phone_number"));
                 result.add(customerData);
             }
         } catch (SQLException e) {
@@ -57,12 +57,11 @@ public class SearchController {
         return result;
     }
 
-
     @GetMapping("/searchCall")
     public List<Call> searchCallsByPhoneNumber(@RequestParam String phoneNumber) {
         List<Call> result = new ArrayList<>();
         try (Connection connection = DatabaseManager.getConnection()) {
-            String sql = "SELECT * FROM calls WHERE p   hone_number = ?";
+            String sql = "SELECT * FROM calls WHERE phone_number = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, phoneNumber);
             ResultSet resultSet = statement.executeQuery();
@@ -70,10 +69,12 @@ public class SearchController {
                 Call call = new Call();
                 call.setCallId(resultSet.getInt("call_id"));
                 call.setPhoneNumber(resultSet.getString("phone_number"));
-                // Gán giá trị chuỗi từ cột call_date trực tiếp vào thuộc tính callDate
                 call.setCallDate(resultSet.getString("call_date"));
                 call.setDescription(resultSet.getString("description"));
                 call.setDuration(resultSet.getString("duration")); // Sửa thành String
+                call.setStart(resultSet.getString("start")); // Thêm cột start
+                call.setEnd(resultSet.getString("end")); // Thêm cột end
+                call.setRecord(resultSet.getString("record")); // Thêm cột record
                 call.setUserId(resultSet.getInt("user_id"));
                 call.setAuId(resultSet.getInt("au_id"));
                 call.setStaId(resultSet.getInt("sta_id"));
@@ -84,6 +85,5 @@ public class SearchController {
         }
         return result;
     }
-
     // Các phương thức tìm kiếm khác
 }

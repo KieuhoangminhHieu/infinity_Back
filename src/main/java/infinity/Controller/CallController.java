@@ -54,7 +54,7 @@ public class CallController {
 
 
     @PostMapping("/calls")
-    public void saveCallToDatabase(@RequestBody Call call) {
+    public Call saveCallToDatabase(@RequestBody Call call) {
         try (Connection connection = databaseManager.getConnection()) {
             // Lấy `call_id` lớn nhất từ bảng `calls`
             String getMaxIdQuery = "SELECT MAX(call_id) FROM calls";
@@ -73,17 +73,21 @@ public class CallController {
             statement.setString(2, call.getPhoneNumber());
             statement.setString(3, call.getCallDate());
             statement.setString(4, call.getDescription());
-            statement.setString(5, call.getDuration()); // Cập nhật thành kiểu String
-            statement.setString(6, call.getStart()); // Thêm cột start
-            statement.setString(7, call.getEnd()); // Thêm cột end
-            statement.setString(8, call.getRecord()); // Thêm cột record
+            statement.setString(5, call.getDuration());
+            statement.setString(6, call.getStart());
+            statement.setString(7, call.getEnd());
+            statement.setString(8, call.getRecord());
             statement.setInt(9, call.getUserId());
             statement.setInt(10, call.getAuId());
             statement.setInt(11, call.getStaId());
             statement.executeUpdate();
+
+            // Set the call_id of the call object
+            call.setCallId(nextId);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return call;
     }
 
     @DeleteMapping("/calls/{id}")
@@ -99,7 +103,7 @@ public class CallController {
     }
 
     @PutMapping("/calls/{id}")
-    public void updateCallInDatabase(@PathVariable long id, @RequestBody Call call) {
+    public Call updateCallInDatabase(@PathVariable long id, @RequestBody Call call) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "UPDATE calls SET phone_number = ?, call_date = ?, description = ?, duration = ?, " +
                     "start = ?, end = ?, record = ?, user_id = ?, au_id = ?, sta_id = ? WHERE call_id = ?";
@@ -107,17 +111,21 @@ public class CallController {
             statement.setString(1, call.getPhoneNumber());
             statement.setString(2, call.getCallDate());
             statement.setString(3, call.getDescription());
-            statement.setString(4, call.getDuration()); // Cập nhật thành kiểu String
-            statement.setString(5, call.getStart()); // Thêm cột start
-            statement.setString(6, call.getEnd()); // Thêm cột end
-            statement.setString(7, call.getRecord()); // Thêm cột record
+            statement.setString(4, call.getDuration());
+            statement.setString(5, call.getStart());
+            statement.setString(6, call.getEnd());
+            statement.setString(7, call.getRecord());
             statement.setInt(8, call.getUserId());
             statement.setInt(9, call.getAuId());
             statement.setInt(10, call.getStaId());
             statement.setLong(11, id);
             statement.executeUpdate();
+
+            // Ensure the call_id of the call object is set to the provided id
+            call.setCallId((int) id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return call;
     }
 }

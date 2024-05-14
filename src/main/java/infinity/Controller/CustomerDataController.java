@@ -50,7 +50,7 @@ public class CustomerDataController {
 
 
     @PostMapping("/customer-data")
-    public void saveCustomerDataToDatabase(@RequestBody CustomerData customerData) {
+    public CustomerData saveCustomerDataToDatabase(@RequestBody CustomerData customerData) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "INSERT INTO customer_data (cus_id, call_id, sta_id, cus_name, datatype, phone_number) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -58,13 +58,15 @@ public class CustomerDataController {
             statement.setString(2, customerData.getCallId());
             statement.setString(3, customerData.getStaId());
             statement.setString(4, customerData.getCusName());
-            statement.setString(5, customerData.getDatatype()); // Thêm cột mới
-            statement.setString(6, customerData.getPhoneNumber()); // Thêm cột mới
+            statement.setString(5, customerData.getDatatype());
+            statement.setString(6, customerData.getPhoneNumber());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return customerData;
     }
+
 
     @GetMapping("/customer-data/{cusId}")
     public CustomerData getCustomerDataById(@PathVariable String cusId) {
@@ -90,21 +92,23 @@ public class CustomerDataController {
     }
 
     @PutMapping("/customer-data/{cusId}")
-    public void updateCustomerDataInDatabase(@PathVariable String cusId, @RequestBody CustomerData customerData) {
+    public CustomerData updateCustomerDataInDatabase(@PathVariable String cusId, @RequestBody CustomerData customerData) {
         try (Connection connection = databaseManager.getConnection()) {
             String sql = "UPDATE customer_data SET call_id = ?, sta_id = ?, cus_name = ?, datatype = ?, phone_number = ? WHERE cus_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, customerData.getCallId());
             statement.setString(2, customerData.getStaId());
             statement.setString(3, customerData.getCusName());
-            statement.setString(4, customerData.getDatatype()); // Thêm cột mới
-            statement.setString(5, customerData.getPhoneNumber()); // Thêm cột mới
+            statement.setString(4, customerData.getDatatype());
+            statement.setString(5, customerData.getPhoneNumber());
             statement.setString(6, cusId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return customerData;
     }
+
 
     @DeleteMapping("/customer-data/{cusId}")
     public void deleteCustomerDataFromDatabase(@PathVariable String cusId) {
