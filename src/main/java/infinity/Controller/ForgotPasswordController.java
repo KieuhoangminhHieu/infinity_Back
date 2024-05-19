@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -19,6 +20,9 @@ public class ForgotPasswordController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    // Map tạm thời để lưu trữ mã xác thực cho mỗi email
+    private Map<String, String> verificationCodes = new HashMap<>();
 
     @PostMapping("/forgot-password")
     @ResponseStatus(HttpStatus.OK)
@@ -40,6 +44,9 @@ public class ForgotPasswordController {
             // Tạo mã xác thực
             String verificationCode = generateRandomString(6);
 
+            // Lưu mã xác thực vào Map tạm thời
+            verificationCodes.put(email, verificationCode);
+
             // Gửi mã xác thực qua email
             if (sendEmail(email, verificationCode)) {
                 return ResponseEntity.ok("Mã xác thực đã được gửi đến email");
@@ -49,6 +56,47 @@ public class ForgotPasswordController {
         } else {
             // Email không tồn tại trong cơ sở dữ liệu
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email không tồn tại trong hệ thống!");
+        }
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestBody CodeVerificationRequest request) {
+        String email = request.getEmail();
+        String code = request.getCode();
+
+        String storedCode = verificationCodes.get(email);
+
+        if (storedCode != null && storedCode.equals(code)) {
+            // Mã xác thực hợp lệ
+            return ResponseEntity.ok("Mã xác thực hợp lệ");
+        } else {
+            // Mã xác thực không hợp lệ
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã xác thực không hợp lệ");
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
+        String email = request.getEmail();
+        String code = request.getCode();
+        String newPassword = request.getNewPassword();
+
+        String storedCode = verificationCodes.get(email);
+
+        if (storedCode != null && storedCode.equals(code)) {
+            // Mã xác thực hợp lệ, tiến hành cập nhật mật khẩu mới
+            String updateQuery = "UPDATE user_infor SET password = ? WHERE email = ?";
+            try {
+                jdbcTemplate.update(updateQuery, newPassword, email);
+                // Xóa mã xác thực sau khi đã sử dụng
+                verificationCodes.remove(email);
+                return ResponseEntity.ok("Mật khẩu đã được cập nhật");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi cập nhật mật khẩu");
+            }
+        } else {
+            // Mã xác thực không hợp lệ
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã xác thực không hợp lệ");
         }
     }
 
@@ -113,5 +161,58 @@ class EmailRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+}
+
+// Class để lưu trữ yêu cầu xác thực mã
+class CodeVerificationRequest {
+    private String email;
+    private String code;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+}
+
+// Class để lưu trữ yêu cầu đặt lại mật khẩu
+class PasswordResetRequest {
+    private String email;
+    private String code;
+    private String newPassword;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
 }
