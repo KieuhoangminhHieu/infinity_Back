@@ -1,5 +1,6 @@
 package infinity.Controller;
 
+import infinity.model.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +50,11 @@ public class ForgotPasswordController {
 
             // Gửi mã xác thực qua email
             if (sendEmail(email, verificationCode)) {
-                return ResponseEntity.ok("Mã xác thực đã được gửi đến email");
+                Response response = new Response(200, true, "Mã xác thực đã được gửi đến email");
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi gửi email");
+                Response response = new Response(500, false, "Lỗi khi gửi email");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
         } else {
             // Email không tồn tại trong cơ sở dữ liệu
@@ -68,7 +71,8 @@ public class ForgotPasswordController {
 
         if (storedCode != null && storedCode.equals(code)) {
             // Mã xác thực hợp lệ
-            return ResponseEntity.ok("Mã xác thực hợp lệ");
+            Response response = new Response(200, true, "Mã xác thực hợp lệ");
+            return ResponseEntity.ok(response);
         } else {
             // Mã xác thực không hợp lệ
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã xác thực không hợp lệ");
@@ -90,7 +94,8 @@ public class ForgotPasswordController {
                 jdbcTemplate.update(updateQuery, newPassword, email);
                 // Xóa mã xác thực sau khi đã sử dụng
                 verificationCodes.remove(email);
-                return ResponseEntity.ok("Mật khẩu đã được cập nhật");
+                Response response = new Response(200, true, "Mật khẩu đã được cập nhật");
+                return ResponseEntity.ok(response);
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi cập nhật mật khẩu");
             }
