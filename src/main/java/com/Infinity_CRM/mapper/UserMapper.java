@@ -1,0 +1,19 @@
+package com.Infinity_CRM.mapper;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+import com.Infinity_CRM.dto.request.UserCreationRequest;
+import com.Infinity_CRM.dto.request.UserUpdateRequest;
+import com.Infinity_CRM.dto.response.UserResponse;
+import com.Infinity_CRM.entity.User;
+
+@Mapper(componentModel = "Spring")
+public interface UserMapper {
+    User toUser(UserCreationRequest request);
+
+    UserResponse toUserResponse(User user);
+
+    @Mapping(target = "roles", ignore = true)
+    void updateUser(@MappingTarget User user, UserUpdateRequest request);
+}
