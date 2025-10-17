@@ -92,6 +92,7 @@ public class UserService {
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
+    
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")

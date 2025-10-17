@@ -3,12 +3,16 @@ package com.Infinity_CRM.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Builder
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuthenticationRequest {
-    String username;
-    String password;
+public class ProjectCreationRequest {
+    String name;
+    String description;
+    String ownerId;
+    Set<String> memberIds;
 }

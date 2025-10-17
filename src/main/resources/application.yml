@@ -4,6 +4,19 @@ server:
     context-path: /infinity
 
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kieuphuonghoai@gmail.com
+    password: your_app_password_here
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    default-encoding: UTF-8
   datasource:
     url: ${DBMS_CONNECTION:jdbc:mysql://localhost:3306/infinity_crm}
     driverClassName: "com.mysql.cj.jdbc.Driver"
@@ -13,8 +26,10 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+
 jwt:
-  signerKey: "LWqlzG1wE66gSkkzE3TSmL+1OFuc+d7BrrVdMnjLtWqSroJFKZq8fiNVHRuDcd4Y\n"
+  signerKey: "bXlTdXBlclNlY3JldEtleUhlcmVXaXRoNjRieXRlc1RvU2lnblRva2VuU3VjY2Vzcw=="
   valid-duration: 3600
   refreshable-duration: 86400
 

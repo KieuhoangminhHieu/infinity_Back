@@ -2,7 +2,6 @@ package com.Infinity_CRM.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-
 import lombok.Getter;
 
 @Getter
@@ -19,6 +18,14 @@ public enum ErrorCode {
     // AUTH
     UNAUTHORIZED(1010, "Bạn không có quyền truy cập", HttpStatus.FORBIDDEN),
     UNAUTHENTICATED(1019, "Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED),
+
+    // TASK
+    TASK_NOT_FOUND(2001, "Không tìm thấy nhiệm vụ", HttpStatus.NOT_FOUND),
+    INVALID_TASK_STATUS(2002, "Trạng thái nhiệm vụ không hợp lệ", HttpStatus.BAD_REQUEST),
+
+    // PROJECT
+    PROJECT_NOT_FOUND(3001, "Không tìm thấy dự án", HttpStatus.NOT_FOUND),
+    PROJECT_NAME_EXISTED(3002, "Tên dự án đã tồn tại", HttpStatus.CONFLICT),
 
     // SYSTEM
     INVALID_KEY(1000, "Khóa không hợp lệ", HttpStatus.BAD_REQUEST),
